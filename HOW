@@ -1,0 +1,37 @@
+(2D) Perlin noise works in three steps:
+
+0. imagine an infinite grid paper
+1. create random gradient unit vectors at every grid node (map each x,y to a vector where x and y are integers)
+
+to get noise from a point:
+2. calculate distance vector from point to corners on the grid paper (x-floor(x))i + (y-floor(y))j, (x-floor(x+1))i + (y-floor(y))j, etc
+3. noise = lerp of the dot products of the distance vector and the gradient vectors using smoothcurve of x-floor(x) and y-floor(y) as weights
+
+NOTE:
+perlin noise breaks when x is an integer because one of the distance vectors becomes 0 and overrides all of the other things to lerp
+
+example for point (x,y) where 0<x<1:
+
+1.
+grad(0,0) = (cos(θ1)i+sin(θ1)j)
+grad(1,0) = (cos(θ2)i+sin(θ2)j)
+grad(0,1) = (cos(θ3)i+sin(θ3)j)
+grad(1,1) = (cos(θ4)i+sin(θ4)j)
+
+θ 1 to 4 are random numbers
+
+2.
+distance(0,0) = (xi+yj)
+distance(1,0) = ((x-1)i+yj)
+distance(0,1) = (xi+(y-1)j)
+distance(1,1) = ((x-1)i-(y-1)j)
+
+3.
+dot1 = grad(0,0)•distance(0,0) = (cos(θ1)*)i + (sin(θ1)*y)j = xcos(θ1)+ysin(θ1)
+dot2 = grad(1,0)•distance(1,0) = (cos(θ2)*(x-1))i + (sin(θ2)*y)j = (x-1)sin(θ2)+ycos(θ2)
+dot3 = xcos(θ1)+(y-1)sin(θ1)
+dot4 = (x-1)cos(θ1)+(y-1)sin(θ1)
+lerp1 = lerp(dot1,dot2,smoothcurve(x)) = (dot2-dot1)*smoothcurve(x) + dot1
+lerp2 = lerp(dot3,dot4,smoothcurve(x)) = (dot4-dot3)*smoothcurve(x) + dot3
+
+noise = lerp(lerp1,lerp2,smoothcurve(y)) = (lerp2-lerp1)*smoothcurve(y) + lerp1
